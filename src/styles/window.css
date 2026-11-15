@@ -1,0 +1,78 @@
+/* ---------- workspaces ---------- */
+.ws-strip { position: absolute; inset: 0; display: flex; transition: transform 0.42s var(--ease); pointer-events: none; z-index: 2; }
+.ws { position: relative; flex: 0 0 100%; height: 100%; }
+.snap-ghost {
+  position: absolute; z-index: 3; pointer-events: none; opacity: 0; border-radius: 14px; inset: 8px;
+  background: rgba(140, 184, 255, 0.12); border: 1px solid rgba(140, 184, 255, 0.45); transition: opacity 0.15s, inset 0.2s var(--ease);
+}
+.snap-ghost.on { opacity: 1; }
+.snap-ghost.left { inset: 8px 50% 8px 8px; }
+.snap-ghost.right { inset: 8px 8px 8px 50%; }
+
+/* ---------- windows ---------- */
+.win {
+  position: absolute; display: flex; flex-direction: column; pointer-events: auto; min-width: 360px; min-height: 240px;
+  background: var(--win); border-radius: 12px; border: 1px solid var(--line-2);
+  box-shadow: var(--shadow); overflow: hidden; transform-origin: 50% 60%;
+}
+.win:focus { outline: none; }
+.win:not(.focused) { box-shadow: 0 20px 50px -20px rgba(0, 0, 0, 0.6); }
+.win:not(.focused) .win-bar { background: rgba(22, 26, 40, 0.9); }
+.win:not(.focused) .win-title { color: var(--dim); }
+.win.focused { border-color: rgba(255, 255, 255, 0.2); }
+.win.focused::before { /* hairline of gradient along the top edge of the active window */
+  content: ''; position: absolute; inset: 0 0 auto 0; height: 1px; background: var(--grad); opacity: 0.8; z-index: 2;
+}
+.win-bar {
+  flex: none; height: 40px; display: flex; align-items: center; gap: 8px; padding: 0 8px 0 12px;
+  background: linear-gradient(180deg, rgba(36, 41, 60, 0.96), rgba(26, 30, 45, 0.96)); border-bottom: 1px solid var(--line);
+  cursor: default; user-select: none; touch-action: none;
+}
+.win-back { display: none; }
+.win-icon { display: flex; }
+.win-title { flex: 1; font: 500 13px var(--sans); text-align: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding-right: 24px; }
+.win-ctl { display: flex; gap: 8px; }
+.ctl { position: relative; width: 22px; height: 22px; border-radius: 50%; background: rgba(255, 255, 255, 0.09); color: var(--text); transition: background 0.15s; }
+.ctl:hover { background: rgba(255, 255, 255, 0.18); }
+.ctl::before, .ctl::after { content: ''; position: absolute; left: 50%; top: 50%; }
+.ctl-min::before { width: 8px; height: 1.5px; margin: 2px 0 0 -4px; background: currentColor; }
+.ctl-max::before { width: 7px; height: 7px; margin: -4px 0 0 -4px; border: 1.5px solid currentColor; border-radius: 1.5px; }
+.ctl-close::before, .ctl-close::after { width: 9px; height: 1.5px; margin: -0.75px 0 0 -4.5px; background: currentColor; transform: rotate(45deg); }
+.ctl-close::after { transform: rotate(-45deg); }
+.ctl-close:hover { background: #f2545b; }
+.win-body { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+.win-body > * { flex: 1; min-height: 0; }
+.win-grip { position: absolute; right: 0; bottom: 0; width: 18px; height: 18px; cursor: nwse-resize; touch-action: none; }
+
+.win.maximized { left: 0 !important; top: 0 !important; width: 100% !important; height: calc(100% - 78px) !important; border-radius: 0 0 12px 12px; }
+.win.tiled-left { left: 0 !important; top: 0 !important; width: 50% !important; height: calc(100% - 78px) !important; border-radius: 0 0 12px 0; }
+.win.tiled-right { left: 50% !important; top: 0 !important; width: 50% !important; height: calc(100% - 78px) !important; border-radius: 0 0 0 12px; }
+.win.maximized .win-grip, .win.tiled-left .win-grip, .win.tiled-right .win-grip { display: none; }
+.win.minimized { display: none; }
+
+/* motion */
+.win.morph { transition: left 0.24s var(--ease), top 0.24s var(--ease), width 0.24s var(--ease), height 0.24s var(--ease), border-radius 0.24s; }
+.win.opening { animation: w-open 0.22s var(--ease) both; }
+.win.closing { animation: w-close 0.16s ease-in both; pointer-events: none; }
+.win.minimizing { animation: w-min 0.24s cubic-bezier(0.5, 0, 0.75, 0) both; pointer-events: none; }
+.win.restoring { animation: w-min 0.24s var(--ease) reverse both; }
+@keyframes w-open { from { opacity: 0; transform: scale(0.92) translateY(10px); } }
+@keyframes w-close { to { opacity: 0; transform: scale(0.94); } }
+@keyframes w-min { to { opacity: 0; transform: translate(var(--mx, 0), var(--my, 300px)) scale(0.08); } }
+
+/* ---------- phones: one full-screen panel at a time ---------- */
+@media (max-width: 760px) {
+  .win, .win.maximized, .win.tiled-left, .win.tiled-right {
+    inset: 0 !important; width: auto !important; height: auto !important; min-width: 0; border-radius: 0; border: 0; box-shadow: none;
+  }
+  .win:not(.focused) { display: none; }
+  .win.focused::before { display: none; }
+  .win-bar { height: 46px; padding: 0 10px 0 4px; }
+  .win-back { display: block; width: 40px; height: 40px; font-size: 26px; line-height: 38px; text-align: center; color: var(--text); }
+  .win-ctl, .win-grip { display: none; }
+  .win-title { text-align: left; padding: 0; font-size: 15px; }
+  .win.opening { animation: w-slide 0.26s var(--ease) both; }
+  .win.closing { animation: w-slide 0.2s ease-in reverse both; }
+  @keyframes w-slide { from { transform: translateX(30%); opacity: 0; } }
+  .ws-strip { transform: none !important; }
+}
